@@ -3,7 +3,10 @@
   "buildCommand": "npm run build",
   "functions": {
     "api/index.ts": {
-      "includeFiles": "prisma/**"
+      "includeFiles": [
+        "prisma/**",
+        "node_modules/swagger-ui-dist/**"
+      ]
     }
   },
   "rewrites": [
