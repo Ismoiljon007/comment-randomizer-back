@@ -1,6 +1,6 @@
 import type { Role } from "@prisma/client";
 import jwt, { type JwtPayload, type SignOptions } from "jsonwebtoken";
-import { env } from "../config/env";
+import { env, getJwtAccessSecret } from "../config/env";
 
 export interface AccessTokenPayload extends JwtPayload {
   userId: string;
@@ -25,11 +25,11 @@ export function signAccessToken(user: TokenUser): string {
       email: user.email,
       role: user.role,
     },
-    env.JWT_ACCESS_SECRET,
+    getJwtAccessSecret(),
     options,
   );
 }
 
 export function verifyAccessToken(token: string): AccessTokenPayload {
-  return jwt.verify(token, env.JWT_ACCESS_SECRET) as AccessTokenPayload;
+  return jwt.verify(token, getJwtAccessSecret()) as AccessTokenPayload;
 }
