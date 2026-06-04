@@ -104,11 +104,43 @@ export const swaggerSpec = {
       },
       CategoryListResponse: {
         type: "object",
-        required: ["categories"],
+        required: ["data"],
         properties: {
-          categories: {
-            type: "array",
-            items: { $ref: "#/components/schemas/CategoryWithCount" },
+          data: {
+            type: "object",
+            required: ["categories"],
+            properties: {
+              categories: {
+                type: "array",
+                items: { $ref: "#/components/schemas/CategoryWithCount" },
+              },
+            },
+          },
+        },
+      },
+      CategoryResponse: {
+        type: "object",
+        required: ["data"],
+        properties: {
+          data: {
+            type: "object",
+            required: ["category"],
+            properties: {
+              category: { $ref: "#/components/schemas/Category" },
+            },
+          },
+        },
+      },
+      CategoryWithCountResponse: {
+        type: "object",
+        required: ["data"],
+        properties: {
+          data: {
+            type: "object",
+            required: ["category"],
+            properties: {
+              category: { $ref: "#/components/schemas/CategoryWithCount" },
+            },
           },
         },
       },
@@ -152,27 +184,64 @@ export const swaggerSpec = {
       },
       CommentsListResponse: {
         type: "object",
-        required: ["total", "page", "pageSize", "totalPages", "items"],
+        required: ["data", "meta"],
         properties: {
-          total: { type: "integer", example: 200000 },
-          page: { type: "integer", example: 1 },
-          pageSize: { type: "integer", example: 20 },
-          totalPages: { type: "integer", example: 10000 },
-          items: {
-            type: "array",
-            items: { $ref: "#/components/schemas/Comment" },
+          data: {
+            type: "object",
+            required: ["comments"],
+            properties: {
+              comments: {
+                type: "array",
+                items: { $ref: "#/components/schemas/Comment" },
+              },
+            },
+          },
+          meta: {
+            type: "object",
+            required: ["total", "page", "pageSize", "totalPages"],
+            properties: {
+              total: { type: "integer", example: 200000 },
+              page: { type: "integer", example: 1 },
+              pageSize: { type: "integer", example: 20 },
+              totalPages: { type: "integer", example: 10000 },
+            },
+          },
+        },
+      },
+      CommentResponse: {
+        type: "object",
+        required: ["data"],
+        properties: {
+          data: {
+            type: "object",
+            required: ["comment"],
+            properties: {
+              comment: { $ref: "#/components/schemas/Comment" },
+            },
           },
         },
       },
       BulkCopyResponse: {
         type: "object",
-        required: ["total", "count", "text"],
+        required: ["data", "meta"],
         properties: {
-          total: { type: "integer", example: 12000 },
-          count: { type: "integer", example: 1000 },
-          text: {
-            type: "string",
-            example: "izoh 1\nizoh 2\nizoh 3",
+          data: {
+            type: "object",
+            required: ["count", "text"],
+            properties: {
+              count: { type: "integer", example: 1000 },
+              text: {
+                type: "string",
+                example: "izoh 1\nizoh 2\nizoh 3",
+              },
+            },
+          },
+          meta: {
+            type: "object",
+            required: ["total"],
+            properties: {
+              total: { type: "integer", example: 12000 },
+            },
           },
         },
       },
@@ -495,13 +564,7 @@ export const swaggerSpec = {
             description: "Yaratilgan kategoriya",
             content: {
               "application/json": {
-                schema: {
-                  type: "object",
-                  required: ["category"],
-                  properties: {
-                    category: { $ref: "#/components/schemas/Category" },
-                  },
-                },
+                schema: { $ref: "#/components/schemas/CategoryResponse" },
               },
             },
           },
@@ -520,13 +583,7 @@ export const swaggerSpec = {
             description: "Kategoriya",
             content: {
               "application/json": {
-                schema: {
-                  type: "object",
-                  required: ["category"],
-                  properties: {
-                    category: { $ref: "#/components/schemas/CategoryWithCount" },
-                  },
-                },
+                schema: { $ref: "#/components/schemas/CategoryWithCountResponse" },
               },
             },
           },
@@ -544,13 +601,7 @@ export const swaggerSpec = {
             description: "Yangilangan kategoriya",
             content: {
               "application/json": {
-                schema: {
-                  type: "object",
-                  required: ["category"],
-                  properties: {
-                    category: { $ref: "#/components/schemas/Category" },
-                  },
-                },
+                schema: { $ref: "#/components/schemas/CategoryResponse" },
               },
             },
           },
@@ -620,13 +671,7 @@ export const swaggerSpec = {
             description: "Yaratilgan izoh",
             content: {
               "application/json": {
-                schema: {
-                  type: "object",
-                  required: ["comment"],
-                  properties: {
-                    comment: { $ref: "#/components/schemas/Comment" },
-                  },
-                },
+                schema: { $ref: "#/components/schemas/CommentResponse" },
               },
             },
           },
@@ -646,13 +691,7 @@ export const swaggerSpec = {
             description: "Izoh",
             content: {
               "application/json": {
-                schema: {
-                  type: "object",
-                  required: ["comment"],
-                  properties: {
-                    comment: { $ref: "#/components/schemas/Comment" },
-                  },
-                },
+                schema: { $ref: "#/components/schemas/CommentResponse" },
               },
             },
           },
@@ -670,13 +709,7 @@ export const swaggerSpec = {
             description: "Yangilangan izoh",
             content: {
               "application/json": {
-                schema: {
-                  type: "object",
-                  required: ["comment"],
-                  properties: {
-                    comment: { $ref: "#/components/schemas/Comment" },
-                  },
-                },
+                schema: { $ref: "#/components/schemas/CommentResponse" },
               },
             },
           },
