@@ -2,37 +2,26 @@ import compression from "compression";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
-import { env } from "./config/env";
 import { errorMiddleware, notFound } from "./middleware/error.middleware";
 import { apiRouter } from "./routes";
 
 export const app = express();
 
-function normalizeOrigin(origin: string): string {
-  const trimmed = origin.trim().replace(/\/+$/, "");
-  if (!trimmed) return "";
-  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-}
-
-function parseOrigins(value: string): string[] {
-  return value
-    .split(",")
-    .map(normalizeOrigin)
-    .filter(Boolean);
-}
-
 const allowedOrigins = new Set([
-  ...parseOrigins(env.WEB_ORIGIN),
-  ...parseOrigins(env.CORS_ORIGINS),
-  ...(env.VERCEL_URL ? [normalizeOrigin(env.VERCEL_URL)] : []),
-  ...(env.VERCEL_PROJECT_PRODUCTION_URL
-    ? [normalizeOrigin(env.VERCEL_PROJECT_PRODUCTION_URL)]
-    : []),
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  `http://localhost:${env.PORT}`,
-  `http://127.0.0.1:${env.PORT}`,
+  "https://comment-randomizer-back.vercel.app",
 ]);
+
+function isAllowedOrigin(origin: string): boolean {
+  if (allowedOrigins.has(origin)) return true;
+
+  try {
+    const url = new URL(origin);
+    const isLocalhost = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+    return isLocalhost && (url.protocol === "http:" || url.protocol === "https:");
+  } catch {
+    return false;
+  }
+}
 
 app.use(
   helmet({
@@ -55,7 +44,7 @@ app.use(
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.has(origin)) {
+      if (!origin || isAllowedOrigin(origin)) {
         callback(null, true);
         return;
       }

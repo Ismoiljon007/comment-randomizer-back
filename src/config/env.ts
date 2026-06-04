@@ -16,10 +16,6 @@ export const env = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
   PORT: Number(process.env.PORT || 4000),
   NODE_ENV: process.env.NODE_ENV || "development",
-  WEB_ORIGIN: process.env.WEB_ORIGIN || "http://localhost:3000",
-  CORS_ORIGINS: process.env.CORS_ORIGINS || "",
-  VERCEL_URL: process.env.VERCEL_URL || "",
-  VERCEL_PROJECT_PRODUCTION_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL || "",
   COMMENTS_JSON_PATH: process.env.COMMENTS_JSON_PATH || "",
 };
 

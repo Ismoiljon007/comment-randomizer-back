@@ -49,16 +49,10 @@ JWT_ACCESS_SECRET="change-this-secret"
 JWT_EXPIRES_IN="7d"
 PORT=4000
 NODE_ENV="development"
-WEB_ORIGIN="http://localhost:3000"
-CORS_ORIGINS=""
 COMMENTS_JSON_PATH=""
 ```
 
-`WEB_ORIGIN` frontend domeni uchun ishlatiladi. Bir nechta frontend domen bo'lsa, `CORS_ORIGINS` ichida vergul bilan ajratib kiriting:
-
-```env
-CORS_ORIGINS="https://frontend-domain.vercel.app,https://admin-domain.vercel.app"
-```
+CORS kod ichida sozlangan: `localhost`, `127.0.0.1` va Vercel production domeniga ruxsat berilgan.
 
 Vercel deployda `JWT_ACCESS_SECRET` albatta Environment Variables ichida bo'lishi kerak. Aks holda auth endpointlar ishlamaydi.
 
