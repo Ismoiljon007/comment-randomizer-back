@@ -11,8 +11,8 @@ function getRequiredEnv(name: string): string {
 }
 
 export const env = {
-  DATABASE_URL: getRequiredEnv("DATABASE_URL"),
-  JWT_ACCESS_SECRET: getRequiredEnv("JWT_ACCESS_SECRET"),
+  DATABASE_URL: process.env.DATABASE_URL || "",
+  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || "",
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
   PORT: Number(process.env.PORT || 4000),
   NODE_ENV: process.env.NODE_ENV || "development",
@@ -20,5 +20,5 @@ export const env = {
 };
 
 export function getJwtAccessSecret(): string {
-  return env.JWT_ACCESS_SECRET;
+  return getRequiredEnv("JWT_ACCESS_SECRET");
 }
