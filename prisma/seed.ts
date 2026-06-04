@@ -28,13 +28,13 @@ const batchSize = 5000;
 
 async function main(): Promise<void> {
   const dataPath = await resolveCommentsPath();
-  console.log(`Reading comments data from ${dataPath}`);
+  console.log(`Izohlar ma'lumoti ${dataPath} faylidan o'qilmoqda`);
 
   const raw = await readFile(dataPath, "utf8");
   const dataset = JSON.parse(raw) as RawDataset;
 
   if (!Array.isArray(dataset.categories) || !Array.isArray(dataset.comments)) {
-    throw new Error("comments.json must include categories and comments arrays");
+    throw new Error("comments.json ichida categories va comments arraylari bo'lishi kerak");
   }
 
   const categoryIdMap = new Map<number, string>();
@@ -91,10 +91,10 @@ async function main(): Promise<void> {
       inserted += result.count;
     }
 
-    console.log(`Seeded ${Math.min(start + batchSize, dataset.comments.length)} / ${dataset.comments.length}`);
+    console.log(`Seed qilindi: ${Math.min(start + batchSize, dataset.comments.length)} / ${dataset.comments.length}`);
   }
 
-  console.log(`Seed complete. Inserted ${inserted} comments. Skipped ${skipped}.`);
+  console.log(`Seed tugadi. ${inserted} ta izoh yozildi. ${skipped} tasi o'tkazib yuborildi.`);
 }
 
 async function resolveCommentsPath(): Promise<string> {
@@ -110,12 +110,12 @@ async function resolveCommentsPath(): Promise<string> {
       await access(candidate);
       return candidate;
     } catch {
-      // Try the next candidate.
+      // Keyingi variantni tekshiramiz.
     }
   }
 
   throw new Error(
-    `comments.json not found. Tried: ${candidates.join(", ")}`,
+    `comments.json topilmadi. Tekshirilgan yo'llar: ${candidates.join(", ")}`,
   );
 }
 

@@ -55,7 +55,7 @@ export const updateCommentSchema = z.object({
       sentiment: sentimentSchema.optional(),
     })
     .refine((value) => Object.keys(value).length > 0, {
-      message: "At least one field is required",
+      message: "Kamida bitta maydon yuborilishi kerak",
     }),
 });
 

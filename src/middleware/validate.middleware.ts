@@ -20,7 +20,7 @@ export function validate(schema: z.ZodType) {
     if (!result.success) {
       next(
         new ValidationError(
-          "Validation failed",
+          "Validatsiyadan o'tmadi",
           result.error.issues.map((issue) => ({
             field: formatField(issue.path),
             message: issue.message,

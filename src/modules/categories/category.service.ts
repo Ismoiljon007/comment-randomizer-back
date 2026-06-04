@@ -42,7 +42,7 @@ export async function getCategory(id: string) {
   });
 
   if (!category) {
-    throw new NotFoundError("Category not found");
+    throw new NotFoundError("Kategoriya topilmadi");
   }
 
   const { _count, ...rest } = category;
@@ -104,12 +104,12 @@ function ensureCanMutateCategory(
   auth: AuthContext,
 ): asserts category is { id: string; createdById: string | null } {
   if (!category) {
-    throw new NotFoundError("Category not found");
+    throw new NotFoundError("Kategoriya topilmadi");
   }
 
   if (auth.role === "ADMIN") return;
 
   if (category.createdById && category.createdById === auth.userId) return;
 
-  throw new ForbiddenError("You can only modify categories you created");
+  throw new ForbiddenError("Faqat o'zingiz yaratgan kategoriyalarni o'zgartira olasiz");
 }

@@ -7,8 +7,27 @@ import { errorMiddleware, notFound } from "./middleware/error.middleware";
 import { apiRouter } from "./routes";
 
 export const app = express();
+
+function normalizeOrigin(origin: string): string {
+  const trimmed = origin.trim().replace(/\/+$/, "");
+  if (!trimmed) return "";
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+function parseOrigins(value: string): string[] {
+  return value
+    .split(",")
+    .map(normalizeOrigin)
+    .filter(Boolean);
+}
+
 const allowedOrigins = new Set([
-  env.WEB_ORIGIN,
+  ...parseOrigins(env.WEB_ORIGIN),
+  ...parseOrigins(env.CORS_ORIGINS),
+  ...(env.VERCEL_URL ? [normalizeOrigin(env.VERCEL_URL)] : []),
+  ...(env.VERCEL_PROJECT_PRODUCTION_URL
+    ? [normalizeOrigin(env.VERCEL_PROJECT_PRODUCTION_URL)]
+    : []),
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   `http://localhost:${env.PORT}`,
@@ -41,7 +60,7 @@ app.use(
         return;
       }
 
-      callback(new Error(`CORS origin not allowed: ${origin}`));
+      callback(new Error(`CORS originiga ruxsat berilmagan: ${origin}`));
     },
     credentials: true,
   }),

@@ -23,6 +23,6 @@ export const updateCategorySchema = z.object({
       description: z.string().trim().max(500).nullable().optional(),
     })
     .refine((value) => Object.keys(value).length > 0, {
-      message: "At least one field is required",
+      message: "Kamida bitta maydon yuborilishi kerak",
     }),
 });

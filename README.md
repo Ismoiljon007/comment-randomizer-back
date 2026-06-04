@@ -1,17 +1,17 @@
-# Comment Randomizer Backend
+# Comment Randomizer Backendi
 
-Express.js + Prisma + PostgreSQL backend. Bu project alohida backend root sifatida ishlaydi, ya'ni commandlar shu papkaning o'zida bajariladi.
+Express.js, Prisma va PostgreSQL asosidagi server qismi. Bu loyiha server qismining alohida ildiz papkasi sifatida ishlaydi, ya'ni buyruqlar shu papkaning o'zida bajariladi.
 
-## Stack
+## Texnologiyalar
 
 - Express.js
 - TypeScript
 - Prisma
 - PostgreSQL
-- JWT auth
-- Zod validation
+- JWT autentifikatsiyasi
+- Zod validatsiyasi
 
-## Project Structure
+## Loyiha Tuzilishi
 
 ```txt
 .
@@ -33,7 +33,7 @@ Express.js + Prisma + PostgreSQL backend. Bu project alohida backend root sifati
 └── tsconfig.json
 ```
 
-## Setup
+## Sozlash
 
 ```bash
 npm install
@@ -41,7 +41,7 @@ cp .env.example .env
 npm run prisma:generate
 ```
 
-`.env` ichidagi `DATABASE_URL` ni o'zingizdagi PostgreSQL databasega moslang:
+`.env` ichidagi `DATABASE_URL` qiymatini o'zingizdagi PostgreSQL ma'lumotlar bazasiga moslang:
 
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/comment_randomizer"
@@ -50,98 +50,103 @@ JWT_EXPIRES_IN="7d"
 PORT=4000
 NODE_ENV="development"
 WEB_ORIGIN="http://localhost:3000"
+CORS_ORIGINS=""
 COMMENTS_JSON_PATH=""
 ```
 
-## Database
+`WEB_ORIGIN` frontend domeni uchun ishlatiladi. Bir nechta frontend domen bo'lsa, `CORS_ORIGINS` ichida vergul bilan ajratib kiriting:
 
-Database tayyor bo'lgandan keyin migration qiling:
+```env
+CORS_ORIGINS="https://frontend-domain.vercel.app,https://admin-domain.vercel.app"
+```
+
+Vercel deployda `JWT_ACCESS_SECRET` albatta Environment Variables ichida bo'lishi kerak. Aks holda auth endpointlar ishlamaydi.
+
+## Ma'lumotlar Bazasi
+
+Ma'lumotlar bazasi tayyor bo'lgandan keyin migratsiyani ishga tushiring:
 
 ```bash
 npm run prisma:migrate -- --name init
 ```
 
-Production yoki tayyor migrationlarni ishlatish uchun:
+Ishlab chiqarish muhiti yoki tayyor migratsiyalarni ishlatish uchun:
 
 ```bash
 npm run prisma:deploy
 ```
 
-## Seed
+## Boshlang'ich Ma'lumotlar
 
-Boshlang'ich commentlarni import qilish uchun `comments.json` kerak.
+Boshlang'ich izohlarni import qilish uchun `comments.json` kerak.
 
-Variant 1: JSON faylni shu pathga qo'ying:
+1-variant: JSON faylni shu yo'lga qo'ying:
 
 ```txt
 src/data/comments.json
 ```
 
-Variant 2: `.env` ichida absolute path bering:
+2-variant: `comments.json` boshqa joyda bo'lsa, `.env` ichidagi `COMMENTS_JSON_PATH` qiymatiga shu fayl manzilini kiriting.
 
-```env
-COMMENTS_JSON_PATH="/Users/ismoiljon/Desktop/untitled folder/comment-randomizer/server/assets/comments.json"
-```
-
-Keyin seedni ishga tushiring:
+Keyin boshlang'ich ma'lumotlarni yuklashni ishga tushiring:
 
 ```bash
 npm run seed
 ```
 
-Seed script:
+Boshlang'ich ma'lumotlarni yuklash skripti:
 
-- categorylarni databasega yozadi
-- eski numeric `category_id` larni yangi Prisma `Category.id` ga map qiladi
-- `positive`, `funny`, `critical` sentimentlarni uppercase enumga o'tkazadi
-- commentlarni batch bilan import qiladi
+- kategoriyalarni ma'lumotlar bazasiga yozadi
+- eski raqamli `category_id` qiymatlarini yangi Prisma `Category.id` qiymatlariga bog'laydi
+- `positive`, `funny`, `critical` sentimentlarini katta harfli enum qiymatlariga o'tkazadi
+- izohlarni to'plam-to'plam qilib import qiladi
 
-## Development
+## Dasturlash Rejimi
 
 ```bash
 npm run dev
 ```
 
-API default holatda shu URLda ishlaydi:
+API standart holatda shu URLda ishlaydi:
 
 ```txt
 http://localhost:4000/api
 ```
 
-Health check:
+Holat tekshiruvi:
 
 ```txt
 GET /api/health
 ```
 
-Swagger docs:
+Swagger hujjatlari:
 
 ```txt
 http://localhost:4000/api/docs
 ```
 
-OpenAPI JSON:
+Swagger JSON:
 
 ```txt
 http://localhost:4000/api/docs.json
 ```
 
-## Scripts
+## Skriptlar
 
 ```bash
-npm run dev              # dev server
-npm run build            # TypeScript build
+npm run dev              # dasturlash serveri
+npm run build            # TypeScript build jarayoni
 npm run start            # dist/src/server.js ni ishga tushiradi
 npm run typecheck        # tsc --noEmit
-npm run prisma:generate  # Prisma Client generate
-npm run prisma:migrate   # Prisma migrate dev
-npm run prisma:deploy    # Prisma migrate deploy
-npm run seed             # comments.json import
+npm run prisma:generate  # Prisma Client generatsiyasi
+npm run prisma:migrate   # Prisma dasturlash muhiti migratsiyasi
+npm run prisma:deploy    # Prisma deploy migratsiyasi
+npm run seed             # comments.json importi
 ```
 
-## API Endpoints
+## API Endpointlari
 
-### Auth
+### Autentifikatsiya
 
 ```txt
 POST /api/auth/register
@@ -149,7 +154,7 @@ POST /api/auth/login
 GET  /api/auth/me
 ```
 
-### Categories
+### Kategoriyalar
 
 ```txt
 GET    /api/categories
@@ -159,7 +164,7 @@ PATCH  /api/categories/:id
 DELETE /api/categories/:id
 ```
 
-### Comments
+### Izohlar
 
 ```txt
 GET    /api/comments
@@ -170,28 +175,28 @@ DELETE /api/comments/:id
 POST   /api/comments/bulk-copy
 ```
 
-Protected endpointlar uchun header:
+Himoyalangan endpointlar uchun header:
 
 ```txt
 Authorization: Bearer <token>
 ```
 
-## Filtering
+## Filterlash
 
 ```txt
 GET /api/comments?page=1&pageSize=20&categoryId=<id>&sentiment=POSITIVE&q=search
 GET /api/comments?random=true&pageSize=50
 ```
 
-`pageSize` max `1000`.
+`pageSize` maksimal `1000`.
 
-## Bulk Copy
+## Ommaviy Nusxalash
 
 ```txt
 POST /api/comments/bulk-copy
 ```
 
-Body:
+So'rov tanasi:
 
 ```json
 {
@@ -202,13 +207,12 @@ Body:
 }
 ```
 
-Response `text` fieldida commentlar newline bilan qaytadi.
+Javobning `text` maydonida izohlar yangi qator bilan ajratilgan holda qaytadi.
 
-## Permissions
+## Ruxsatlar
 
-- Guest: category/comment list, filter, random, bulk-copy.
-- USER: guest permissionlari, category/comment create, o'zi yaratganlarini edit/delete.
-- ADMIN: hamma category/commentni edit/delete.
+- Mehmon: kategoriya/izoh ro'yxati, filtrlash, tasodifiy olish va ommaviy nusxalash.
+- USER: mehmon ruxsatlari, kategoriya/izoh yaratish, o'zi yaratganlarini tahrirlash/o'chirish.
+- ADMIN: hamma kategoriya/izohlarni tahrirlash/o'chirish.
 
-Seed qilingan category/commentlarda owner yo'q, shuning uchun ularni faqat ADMIN edit/delete qila oladi.
-# comment-randomizer-back
+Seed qilingan kategoriya/izohlarda egasi yo'q, shuning uchun ularni faqat ADMIN tahrirlashi/o'chirishi mumkin.

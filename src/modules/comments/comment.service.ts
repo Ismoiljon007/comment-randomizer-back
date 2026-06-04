@@ -87,7 +87,7 @@ export async function getComment(id: string) {
   });
 
   if (!comment) {
-    throw new NotFoundError("Comment not found");
+    throw new NotFoundError("Izoh topilmadi");
   }
 
   return comment;
@@ -169,7 +169,7 @@ async function ensureCategoryExists(categoryId: string): Promise<void> {
   });
 
   if (!category) {
-    throw new NotFoundError("Category not found");
+    throw new NotFoundError("Kategoriya topilmadi");
   }
 }
 
@@ -178,14 +178,14 @@ function ensureCanMutateComment(
   auth: AuthContext,
 ): asserts comment is Comment {
   if (!comment) {
-    throw new NotFoundError("Comment not found");
+    throw new NotFoundError("Izoh topilmadi");
   }
 
   if (auth.role === "ADMIN") return;
 
   if (comment.createdById && comment.createdById === auth.userId) return;
 
-  throw new ForbiddenError("You can only modify comments you created");
+  throw new ForbiddenError("Faqat o'zingiz yaratgan izohlarni o'zgartira olasiz");
 }
 
 async function findRandomComments(
