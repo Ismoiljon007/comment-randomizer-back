@@ -36,6 +36,15 @@ export const listCommentsSchema = z.object({
   }),
 });
 
+export const statsCommentsSchema = z.object({
+  query: z.object({
+    categoryId: z.string().min(1).optional(),
+    category_id: z.string().min(1).optional(),
+    sentiment: optionalSentimentSchema,
+    q: z.string().trim().max(200).optional(),
+  }),
+});
+
 export const createCommentSchema = z.object({
   body: z.object({
     categoryId: z.string().min(1),

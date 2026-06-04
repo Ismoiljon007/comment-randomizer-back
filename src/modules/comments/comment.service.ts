@@ -17,6 +17,13 @@ export interface ListCommentsInput {
   random: boolean;
 }
 
+export interface StatsCommentsInput {
+  categoryId?: string;
+  category_id?: string;
+  sentiment?: Sentiment;
+  q?: string;
+}
+
 interface CommentInput {
   categoryId: string;
   text: string;
@@ -77,6 +84,25 @@ export async function listComments(input: ListCommentsInput) {
     pageSize: input.pageSize,
     totalPages: Math.max(1, Math.ceil(total / input.pageSize)),
     items,
+  };
+}
+
+export async function getCommentStats(input: StatsCommentsInput) {
+  const categoryId = input.categoryId || input.category_id;
+  const where = createWhere({
+    categoryId,
+    sentiment: input.sentiment,
+    q: input.q,
+  });
+
+  const [totalComments, totalCategories] = await Promise.all([
+    prisma.comment.count({ where }),
+    prisma.category.count(),
+  ]);
+
+  return {
+    total_comments: totalComments,
+    total_categories: totalCategories,
   };
 }
 

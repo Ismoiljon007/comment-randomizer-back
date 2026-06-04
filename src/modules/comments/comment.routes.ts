@@ -8,12 +8,14 @@ import {
   commentParamsSchema,
   createCommentSchema,
   listCommentsSchema,
+  statsCommentsSchema,
   updateCommentSchema,
 } from "./comment.schema";
 
 export const commentRouter = Router();
 
 commentRouter.get("/", validate(listCommentsSchema), asyncHandler(commentController.list));
+commentRouter.get("/stats", validate(statsCommentsSchema), asyncHandler(commentController.stats));
 commentRouter.post("/bulk-copy", validate(bulkCopySchema), asyncHandler(commentController.bulkCopy));
 commentRouter.get("/:id", validate(commentParamsSchema), asyncHandler(commentController.getById));
 commentRouter.post(

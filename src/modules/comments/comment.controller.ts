@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { getValidatedQuery } from "../../middleware/validate.middleware";
 import { sendPaginated, sendSuccess } from "../../utils/response";
-import type { ListCommentsInput } from "./comment.service";
+import type { ListCommentsInput, StatsCommentsInput } from "./comment.service";
 import * as commentService from "./comment.service";
 
 export async function list(req: Request, res: Response): Promise<void> {
@@ -11,6 +11,11 @@ export async function list(req: Request, res: Response): Promise<void> {
     totalPages: result.totalPages,
     total: result.total,
   });
+}
+
+export async function stats(req: Request, res: Response): Promise<void> {
+  const result = await commentService.getCommentStats(getValidatedQuery<StatsCommentsInput>(req));
+  sendSuccess(res, result);
 }
 
 export async function getById(req: Request, res: Response): Promise<void> {

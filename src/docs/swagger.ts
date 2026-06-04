@@ -215,6 +215,22 @@ export const swaggerSpec = {
           message: { type: "string", example: "" },
         },
       },
+      CommentStatsResponse: {
+        type: "object",
+        required: ["status", "data", "message"],
+        properties: {
+          status: { type: "string", example: "success" },
+          data: {
+            type: "object",
+            required: ["total_comments", "total_categories"],
+            properties: {
+              total_comments: { type: "integer", example: 144 },
+              total_categories: { type: "integer", example: 12 },
+            },
+          },
+          message: { type: "string", example: "" },
+        },
+      },
       BulkCopyResponse: {
         type: "object",
         required: ["status", "data", "message"],
@@ -682,6 +698,35 @@ export const swaggerSpec = {
           "400": { $ref: "#/components/responses/BadRequest" },
           "401": { $ref: "#/components/responses/Unauthorized" },
           "404": { $ref: "#/components/responses/NotFound" },
+        },
+      },
+    },
+    "/comments/stats": {
+      get: {
+        tags: ["Izohlar"],
+        summary: "Izohlar statistikasi (filterlash mumkin)",
+        description:
+          "total_comments filterlarga qarab o'zgaradi, total_categories esa har doim umumiy kategoriyalar soni.",
+        parameters: [
+          { name: "categoryId", in: "query", schema: { type: "string" } },
+          { name: "category_id", in: "query", schema: { type: "string" } },
+          {
+            name: "sentiment",
+            in: "query",
+            schema: { $ref: "#/components/schemas/Sentiment" },
+          },
+          { name: "q", in: "query", schema: { type: "string", maxLength: 200 } },
+        ],
+        responses: {
+          "200": {
+            description: "Statistika",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/CommentStatsResponse" },
+              },
+            },
+          },
+          "400": { $ref: "#/components/responses/BadRequest" },
         },
       },
     },
