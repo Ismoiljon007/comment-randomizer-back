@@ -1,5 +1,5 @@
 import compression from "compression";
-import cors from "cors";
+import cors, { type CorsOptions } from "cors";
 import express from "express";
 import helmet from "helmet";
 import { errorMiddleware, notFound } from "./middleware/error.middleware";
@@ -7,21 +7,13 @@ import { apiRouter } from "./routes";
 
 export const app = express();
 
-const allowedOrigins = new Set([
-  "https://comment-randomizer-back.vercel.app",
-]);
-
-function isAllowedOrigin(origin: string): boolean {
-  if (allowedOrigins.has(origin)) return true;
-
-  try {
-    const url = new URL(origin);
-    const isLocalhost = url.hostname === "localhost" || url.hostname === "127.0.0.1";
-    return isLocalhost && (url.protocol === "http:" || url.protocol === "https:");
-  } catch {
-    return false;
-  }
-}
+const corsOptions: CorsOptions = {
+  origin: true,
+  credentials: true,
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 204,
+};
 
 app.use(
   helmet({
@@ -42,17 +34,7 @@ app.use(
   }),
 );
 app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || isAllowedOrigin(origin)) {
-        callback(null, true);
-        return;
-      }
-
-      callback(new Error(`CORS originiga ruxsat berilmagan: ${origin}`));
-    },
-    credentials: true,
-  }),
+  cors(corsOptions),
 );
 app.use(compression());
 app.use(express.json({ limit: "2mb" }));
