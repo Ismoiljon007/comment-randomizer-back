@@ -1,22 +1,22 @@
 export const swaggerSpec = {
   openapi: "3.0.3",
   info: {
-    title: "Comment Randomizer Backendi API",
+    title: "Comment Randomizer Backend API",
     version: "1.0.0",
     description:
-      "Autentifikatsiya, kategoriyalar, izohlar, tasodifiy izoh olish va ommaviy nusxalash uchun Express + Prisma server qismi.",
+      "Express + Prisma backend for authentication, categories, comments, random comment retrieval, and bulk copy.",
   },
   servers: [
     {
       url: "/api",
-      description: "Joriy server",
+      description: "Current server",
     },
   ],
   tags: [
-    { name: "Holat" },
-    { name: "Autentifikatsiya" },
-    { name: "Kategoriyalar" },
-    { name: "Izohlar" },
+    { name: "Health" },
+    { name: "Authentication" },
+    { name: "Categories" },
+    { name: "Comments" },
   ],
   components: {
     securitySchemes: {
@@ -79,7 +79,7 @@ export const swaggerSpec = {
           description: {
             type: "string",
             nullable: true,
-            example: "BeamNG crash video izohlari",
+            example: "BeamNG crash video comments",
           },
           createdById: {
             type: "string",
@@ -127,7 +127,7 @@ export const swaggerSpec = {
       },
       CategoryListResponse: {
         type: "object",
-        required: ["status", "data", "message"],
+        required: ["status", "data", "message", "pagination"],
         properties: {
           status: { type: "string", example: "success" },
           data: {
@@ -135,6 +135,7 @@ export const swaggerSpec = {
             items: { $ref: "#/components/schemas/CategoryWithCount" },
           },
           message: { type: "string", example: "" },
+          pagination: { $ref: "#/components/schemas/Pagination" },
         },
       },
       CategoryResponse: {
@@ -171,7 +172,7 @@ export const swaggerSpec = {
           id: { type: "string", example: "clx_comment_id" },
           text: {
             type: "string",
-            example: "Bu o'yin juda zo'r ko'rinyapti",
+            example: "This game looks awesome",
           },
           sentiment: { $ref: "#/components/schemas/Sentiment" },
           categoryId: { type: "string", example: "clx_category_id" },
@@ -231,6 +232,44 @@ export const swaggerSpec = {
           message: { type: "string", example: "" },
         },
       },
+      CommentUploadResponse: {
+        type: "object",
+        required: ["status", "data", "message"],
+        properties: {
+          status: { type: "string", example: "success" },
+          data: {
+            type: "object",
+            required: [
+              "total_rows",
+              "created_comments",
+              "created_categories",
+              "skipped",
+              "errors",
+            ],
+            properties: {
+              total_rows: { type: "integer", example: 100 },
+              created_comments: { type: "integer", example: 98 },
+              created_categories: { type: "integer", example: 3 },
+              skipped: { type: "integer", example: 2 },
+              errors: {
+                type: "array",
+                items: {
+                  type: "object",
+                  required: ["row", "message"],
+                  properties: {
+                    row: { type: "integer", example: 5 },
+                    message: {
+                      type: "string",
+                      example: "invalid sentiment \"GOOD\" (allowed: POSITIVE, FUNNY, CRITICAL)",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          message: { type: "string", example: "" },
+        },
+      },
       BulkCopyResponse: {
         type: "object",
         required: ["status", "data", "message"],
@@ -243,7 +282,7 @@ export const swaggerSpec = {
               count: { type: "integer", example: 1000 },
               text: {
                 type: "string",
-                example: "izoh 1\nizoh 2\nizoh 3",
+                example: "comment 1\ncomment 2\ncomment 3",
               },
               total: { type: "integer", example: 12000 },
             },
@@ -257,7 +296,7 @@ export const swaggerSpec = {
         properties: {
           status: { type: "string", example: "error" },
           data: { type: "object", nullable: true, example: null },
-          message: { type: "string", example: "Resurs topilmadi" },
+          message: { type: "string", example: "Resource not found" },
         },
       },
       ValidationErrorResponse: {
@@ -266,7 +305,7 @@ export const swaggerSpec = {
         properties: {
           status: { type: "string", example: "error" },
           data: { type: "object", nullable: true, example: null },
-          message: { type: "string", example: "Validatsiyadan o'tmadi" },
+          message: { type: "string", example: "Validation failed" },
           errors: {
             type: "array",
             items: {
@@ -274,7 +313,7 @@ export const swaggerSpec = {
               required: ["field", "message"],
               properties: {
                 field: { type: "string", example: "email" },
-                message: { type: "string", example: "Email noto'g'ri" },
+                message: { type: "string", example: "Invalid email" },
               },
             },
           },
@@ -338,7 +377,7 @@ export const swaggerSpec = {
                 description: {
                   type: "string",
                   maxLength: 500,
-                  example: "GTA 6 video izohlari",
+                  example: "GTA 6 video comments",
                 },
               },
             },
@@ -358,7 +397,7 @@ export const swaggerSpec = {
                   type: "string",
                   nullable: true,
                   maxLength: 500,
-                  example: "Yangilangan tavsif",
+                  example: "Updated description",
                 },
               },
             },
@@ -378,7 +417,7 @@ export const swaggerSpec = {
                   type: "string",
                   minLength: 1,
                   maxLength: 1000,
-                  example: "Bu o'yin juda zo'r ko'rinyapti",
+                  example: "This game looks awesome",
                 },
                 sentiment: { $ref: "#/components/schemas/Sentiment" },
               },
@@ -399,7 +438,7 @@ export const swaggerSpec = {
                   type: "string",
                   minLength: 1,
                   maxLength: 1000,
-                  example: "Yangilangan izoh matni",
+                  example: "Updated comment text",
                 },
                 sentiment: { $ref: "#/components/schemas/Sentiment" },
               },
@@ -440,7 +479,7 @@ export const swaggerSpec = {
         },
       },
       Unauthorized: {
-        description: "Token yuborilmagan, noto'g'ri yoki muddati tugagan",
+        description: "Token not provided, invalid, or expired",
         content: {
           "application/json": {
             schema: { $ref: "#/components/schemas/ErrorResponse" },
@@ -448,7 +487,7 @@ export const swaggerSpec = {
         },
       },
       Forbidden: {
-        description: "Foydalanuvchida ruxsat yo'q",
+        description: "User does not have permission",
         content: {
           "application/json": {
             schema: { $ref: "#/components/schemas/ErrorResponse" },
@@ -456,7 +495,7 @@ export const swaggerSpec = {
         },
       },
       NotFound: {
-        description: "Resurs topilmadi",
+        description: "Resource not found",
         content: {
           "application/json": {
             schema: { $ref: "#/components/schemas/ErrorResponse" },
@@ -468,11 +507,11 @@ export const swaggerSpec = {
   paths: {
     "/health": {
       get: {
-        tags: ["Holat"],
-        summary: "Holatni tekshirish",
+        tags: ["Health"],
+        summary: "Health check",
         responses: {
           "200": {
-            description: "API ishlayapti",
+            description: "API is running",
             content: {
               "application/json": {
                 schema: {
@@ -498,12 +537,12 @@ export const swaggerSpec = {
     },
     "/auth/register": {
       post: {
-        tags: ["Autentifikatsiya"],
-        summary: "Foydalanuvchini ro'yxatdan o'tkazish",
+        tags: ["Authentication"],
+        summary: "Register a user",
         requestBody: { $ref: "#/components/requestBodies/RegisterBody" },
         responses: {
           "201": {
-            description: "Ro'yxatdan o'tgan foydalanuvchi va token",
+            description: "Registered user and token",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/AuthResponse" },
@@ -516,12 +555,12 @@ export const swaggerSpec = {
     },
     "/auth/login": {
       post: {
-        tags: ["Autentifikatsiya"],
-        summary: "Foydalanuvchini tizimga kiritish",
+        tags: ["Authentication"],
+        summary: "Log in a user",
         requestBody: { $ref: "#/components/requestBodies/LoginBody" },
         responses: {
           "200": {
-            description: "Tizimga kirgan foydalanuvchi va token",
+            description: "Logged-in user and token",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/AuthResponse" },
@@ -535,12 +574,12 @@ export const swaggerSpec = {
     },
     "/auth/me": {
       get: {
-        tags: ["Autentifikatsiya"],
-        summary: "Joriy foydalanuvchini olish",
+        tags: ["Authentication"],
+        summary: "Get the current user",
         security: [{ bearerAuth: [] }],
         responses: {
           "200": {
-            description: "Joriy foydalanuvchi",
+            description: "Current user",
             content: {
               "application/json": {
                 schema: {
@@ -561,11 +600,24 @@ export const swaggerSpec = {
     },
     "/categories": {
       get: {
-        tags: ["Kategoriyalar"],
-        summary: "Kategoriyalar ro'yxatini olish",
+        tags: ["Categories"],
+        summary: "List categories",
+        parameters: [
+          {
+            name: "page",
+            in: "query",
+            schema: { type: "integer", minimum: 1, default: 1 },
+          },
+          {
+            name: "pageSize",
+            in: "query",
+            schema: { type: "integer", minimum: 1, maximum: 1000, default: 20 },
+          },
+          { name: "q", in: "query", schema: { type: "string", maxLength: 200 } },
+        ],
         responses: {
           "200": {
-            description: "Kategoriyalar",
+            description: "Categories",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/CategoryListResponse" },
@@ -575,13 +627,13 @@ export const swaggerSpec = {
         },
       },
       post: {
-        tags: ["Kategoriyalar"],
-        summary: "Kategoriya yaratish",
+        tags: ["Categories"],
+        summary: "Create a category",
         security: [{ bearerAuth: [] }],
         requestBody: { $ref: "#/components/requestBodies/CategoryCreateBody" },
         responses: {
           "201": {
-            description: "Yaratilgan kategoriya",
+            description: "Created category",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/CategoryResponse" },
@@ -595,12 +647,12 @@ export const swaggerSpec = {
     },
     "/categories/{id}": {
       get: {
-        tags: ["Kategoriyalar"],
-        summary: "Kategoriyani id bo'yicha olish",
+        tags: ["Categories"],
+        summary: "Get a category by id",
         parameters: [{ $ref: "#/components/parameters/IdParam" }],
         responses: {
           "200": {
-            description: "Kategoriya",
+            description: "Category",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/CategoryWithCountResponse" },
@@ -611,14 +663,14 @@ export const swaggerSpec = {
         },
       },
       patch: {
-        tags: ["Kategoriyalar"],
-        summary: "Kategoriyani yangilash",
+        tags: ["Categories"],
+        summary: "Update a category",
         security: [{ bearerAuth: [] }],
         parameters: [{ $ref: "#/components/parameters/IdParam" }],
         requestBody: { $ref: "#/components/requestBodies/CategoryUpdateBody" },
         responses: {
           "200": {
-            description: "Yangilangan kategoriya",
+            description: "Updated category",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/CategoryResponse" },
@@ -632,8 +684,8 @@ export const swaggerSpec = {
         },
       },
       delete: {
-        tags: ["Kategoriyalar"],
-        summary: "Kategoriyani o'chirish",
+        tags: ["Categories"],
+        summary: "Delete a category",
         security: [{ bearerAuth: [] }],
         parameters: [{ $ref: "#/components/parameters/IdParam" }],
         responses: {
@@ -646,8 +698,8 @@ export const swaggerSpec = {
     },
     "/comments": {
       get: {
-        tags: ["Izohlar"],
-        summary: "Izohlarni ro'yxatlash, filterlash yoki tasodifiy olish",
+        tags: ["Comments"],
+        summary: "List, filter, or randomly fetch comments",
         parameters: [
           {
             name: "page",
@@ -671,7 +723,7 @@ export const swaggerSpec = {
         ],
         responses: {
           "200": {
-            description: "Izohlar",
+            description: "Comments",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/CommentsListResponse" },
@@ -682,13 +734,13 @@ export const swaggerSpec = {
         },
       },
       post: {
-        tags: ["Izohlar"],
-        summary: "Izoh yaratish",
+        tags: ["Comments"],
+        summary: "Create a comment",
         security: [{ bearerAuth: [] }],
         requestBody: { $ref: "#/components/requestBodies/CommentCreateBody" },
         responses: {
           "201": {
-            description: "Yaratilgan izoh",
+            description: "Created comment",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/CommentResponse" },
@@ -703,10 +755,10 @@ export const swaggerSpec = {
     },
     "/comments/stats": {
       get: {
-        tags: ["Izohlar"],
-        summary: "Izohlar statistikasi (filterlash mumkin)",
+        tags: ["Comments"],
+        summary: "Comment statistics (filterable)",
         description:
-          "total_comments filterlarga qarab o'zgaradi, total_categories esa har doim umumiy kategoriyalar soni.",
+          "total_comments changes based on the filters, while total_categories is always the total number of categories.",
         parameters: [
           { name: "categoryId", in: "query", schema: { type: "string" } },
           { name: "category_id", in: "query", schema: { type: "string" } },
@@ -719,7 +771,7 @@ export const swaggerSpec = {
         ],
         responses: {
           "200": {
-            description: "Statistika",
+            description: "Statistics",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/CommentStatsResponse" },
@@ -732,12 +784,12 @@ export const swaggerSpec = {
     },
     "/comments/{id}": {
       get: {
-        tags: ["Izohlar"],
-        summary: "Izohni id bo'yicha olish",
+        tags: ["Comments"],
+        summary: "Get a comment by id",
         parameters: [{ $ref: "#/components/parameters/IdParam" }],
         responses: {
           "200": {
-            description: "Izoh",
+            description: "Comment",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/CommentResponse" },
@@ -748,14 +800,14 @@ export const swaggerSpec = {
         },
       },
       patch: {
-        tags: ["Izohlar"],
-        summary: "Izohni yangilash",
+        tags: ["Comments"],
+        summary: "Update a comment",
         security: [{ bearerAuth: [] }],
         parameters: [{ $ref: "#/components/parameters/IdParam" }],
         requestBody: { $ref: "#/components/requestBodies/CommentUpdateBody" },
         responses: {
           "200": {
-            description: "Yangilangan izoh",
+            description: "Updated comment",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/CommentResponse" },
@@ -769,8 +821,8 @@ export const swaggerSpec = {
         },
       },
       delete: {
-        tags: ["Izohlar"],
-        summary: "Izohni o'chirish",
+        tags: ["Comments"],
+        summary: "Delete a comment",
         security: [{ bearerAuth: [] }],
         parameters: [{ $ref: "#/components/parameters/IdParam" }],
         responses: {
@@ -781,14 +833,71 @@ export const swaggerSpec = {
         },
       },
     },
+    "/comments/upload": {
+      post: {
+        tags: ["Comments"],
+        summary: "Import comments from an Excel (.xlsx) file",
+        description:
+          "Upload an .xlsx file with columns `category`, `text`, `sentiment`. Each row becomes a comment; if the category does not exist it is created automatically. `sentiment` must be one of POSITIVE, FUNNY, CRITICAL (case-insensitive). Invalid rows are skipped and reported in `errors`.",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "multipart/form-data": {
+              schema: {
+                type: "object",
+                required: ["file"],
+                properties: {
+                  file: {
+                    type: "string",
+                    format: "binary",
+                    description: ".xlsx file (max 4MB)",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "201": {
+            description: "Import summary",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/CommentUploadResponse" },
+              },
+            },
+          },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+        },
+      },
+    },
+    "/comments/upload/template": {
+      get: {
+        tags: ["Comments"],
+        summary: "Download the Excel import template",
+        description:
+          "Returns a ready-to-fill .xlsx template with the required headers (category, text, sentiment), example rows, and a sentiment dropdown limited to POSITIVE, FUNNY, CRITICAL.",
+        responses: {
+          "200": {
+            description: "Excel template file",
+            content: {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                schema: { type: "string", format: "binary" },
+              },
+            },
+          },
+        },
+      },
+    },
     "/comments/bulk-copy": {
       post: {
-        tags: ["Izohlar"],
-        summary: "Clipboardga nusxalash uchun yangi qator bilan ajratilgan izohlarni olish",
+        tags: ["Comments"],
+        summary: "Get newline-separated comments for copying to the clipboard",
         requestBody: { $ref: "#/components/requestBodies/BulkCopyBody" },
         responses: {
           "200": {
-            description: "Ommaviy matn",
+            description: "Bulk text",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/BulkCopyResponse" },

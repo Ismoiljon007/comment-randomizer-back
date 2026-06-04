@@ -35,7 +35,7 @@ export async function register(input: RegisterInput) {
   });
 
   if (existing) {
-    throw new ConflictError("Email allaqachon ro'yxatdan o'tgan");
+    throw new ConflictError("Email is already registered");
   }
 
   const passwordHash = await bcrypt.hash(input.password, 12);
@@ -57,12 +57,12 @@ export async function login(input: LoginInput) {
   });
 
   if (!user) {
-    throw new UnauthorizedError("Email yoki parol noto'g'ri");
+    throw new UnauthorizedError("Invalid email or password");
   }
 
   const passwordIsValid = await bcrypt.compare(input.password, user.passwordHash);
   if (!passwordIsValid) {
-    throw new UnauthorizedError("Email yoki parol noto'g'ri");
+    throw new UnauthorizedError("Invalid email or password");
   }
 
   return createAuthResponse({
@@ -80,7 +80,7 @@ export async function getCurrentUser(userId: string) {
   });
 
   if (!user) {
-    throw new UnauthorizedError("Foydalanuvchi endi mavjud emas");
+    throw new UnauthorizedError("User no longer exists");
   }
 
   return user;

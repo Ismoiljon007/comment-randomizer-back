@@ -15,31 +15,31 @@ export class AppError extends Error {
 }
 
 export class ValidationError extends AppError {
-  constructor(message = "Validatsiyadan o'tmadi", errors?: ValidationIssue[]) {
+  constructor(message = "Validation failed", errors?: ValidationIssue[]) {
     super(message, 400, errors);
   }
 }
 
 export class UnauthorizedError extends AppError {
-  constructor(message = "Autentifikatsiyadan o'tilmagan") {
+  constructor(message = "Not authenticated") {
     super(message, 401);
   }
 }
 
 export class ForbiddenError extends AppError {
-  constructor(message = "Ruxsat yo'q") {
+  constructor(message = "Access denied") {
     super(message, 403);
   }
 }
 
 export class NotFoundError extends AppError {
-  constructor(message = "Resurs topilmadi") {
+  constructor(message = "Resource not found") {
     super(message, 404);
   }
 }
 
 export class ConflictError extends AppError {
-  constructor(message = "Resurs allaqachon mavjud") {
+  constructor(message = "Resource already exists") {
     super(message, 409);
   }
 }

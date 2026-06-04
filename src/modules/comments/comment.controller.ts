@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
 import { getValidatedQuery } from "../../middleware/validate.middleware";
+import { buildCommentsTemplate, parseCommentsExcel } from "../../utils/excel";
+import { ValidationError } from "../../utils/errors";
 import { sendPaginated, sendSuccess } from "../../utils/response";
 import type { ListCommentsInput, StatsCommentsInput } from "./comment.service";
 import * as commentService from "./comment.service";
@@ -45,6 +47,30 @@ export async function remove(req: Request, res: Response): Promise<void> {
     role: req.user!.role,
   });
   res.status(204).send();
+}
+
+export async function uploadExcel(req: Request, res: Response): Promise<void> {
+  if (!req.file) {
+    throw new ValidationError("No file uploaded (send it as form-data field 'file')");
+  }
+
+  const rows = await parseCommentsExcel(req.file.buffer);
+  const result = await commentService.importComments(rows, {
+    userId: req.user!.userId,
+    role: req.user!.role,
+  });
+
+  sendSuccess(res, result, "", 201);
+}
+
+export async function downloadTemplate(_req: Request, res: Response): Promise<void> {
+  const buffer = await buildCommentsTemplate();
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  );
+  res.setHeader("Content-Disposition", 'attachment; filename="comments-template.xlsx"');
+  res.send(buffer);
 }
 
 export async function bulkCopy(req: Request, res: Response): Promise<void> {

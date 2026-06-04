@@ -1,6 +1,7 @@
 import { Prisma, type Comment, type Role, type Sentiment } from "@prisma/client";
 import { prisma } from "../../config/prisma";
 import { ForbiddenError, NotFoundError } from "../../utils/errors";
+import { slugify } from "../../utils/slugify";
 
 interface AuthContext {
   userId: string;
@@ -87,6 +88,97 @@ export async function listComments(input: ListCommentsInput) {
   };
 }
 
+export interface ImportRow {
+  category?: string;
+  text?: string;
+  sentiment?: string;
+}
+
+export interface ImportResult {
+  total_rows: number;
+  created_comments: number;
+  created_categories: number;
+  skipped: number;
+  errors: Array<{ row: number; message: string }>;
+}
+
+const VALID_SENTIMENTS = new Set<Sentiment>(["POSITIVE", "FUNNY", "CRITICAL"]);
+
+export async function importComments(rows: ImportRow[], auth: AuthContext): Promise<ImportResult> {
+  const errors: ImportResult["errors"] = [];
+  const valid: Array<{ name: string; slug: string; text: string; sentiment: Sentiment }> = [];
+
+  rows.forEach((row, index) => {
+    const rowNumber = index + 2; // +1 for header row, +1 for 1-based numbering
+    const name = (row.category ?? "").trim();
+    const text = (row.text ?? "").trim();
+    const sentiment = (row.sentiment ?? "").trim().toUpperCase();
+
+    if (!name) {
+      errors.push({ row: rowNumber, message: "category is empty" });
+      return;
+    }
+    if (!text) {
+      errors.push({ row: rowNumber, message: "text is empty" });
+      return;
+    }
+    if (!VALID_SENTIMENTS.has(sentiment as Sentiment)) {
+      errors.push({
+        row: rowNumber,
+        message: `invalid sentiment "${row.sentiment ?? ""}" (allowed: POSITIVE, FUNNY, CRITICAL)`,
+      });
+      return;
+    }
+
+    valid.push({ name, slug: slugify(name), text, sentiment: sentiment as Sentiment });
+  });
+
+  // Resolve categories by slug, creating any that don't exist yet.
+  const slugToName = new Map<string, string>();
+  for (const item of valid) {
+    if (!slugToName.has(item.slug)) slugToName.set(item.slug, item.name);
+  }
+
+  const existing = await prisma.category.findMany({
+    where: { slug: { in: [...slugToName.keys()] } },
+    select: { id: true, slug: true },
+  });
+  const slugToId = new Map(existing.map((category) => [category.slug, category.id]));
+
+  let createdCategories = 0;
+  for (const [slug, name] of slugToName) {
+    if (slugToId.has(slug)) continue;
+    const created = await prisma.category.create({
+      data: { name, slug, createdById: auth.userId },
+      select: { id: true, slug: true },
+    });
+    slugToId.set(created.slug, created.id);
+    createdCategories += 1;
+  }
+
+  // Bulk-insert the comments.
+  let createdComments = 0;
+  if (valid.length) {
+    const result = await prisma.comment.createMany({
+      data: valid.map((item) => ({
+        text: item.text,
+        sentiment: item.sentiment,
+        categoryId: slugToId.get(item.slug) as string,
+        createdById: auth.userId,
+      })),
+    });
+    createdComments = result.count;
+  }
+
+  return {
+    total_rows: rows.length,
+    created_comments: createdComments,
+    created_categories: createdCategories,
+    skipped: errors.length,
+    errors,
+  };
+}
+
 export async function getCommentStats(input: StatsCommentsInput) {
   const categoryId = input.categoryId || input.category_id;
   const where = createWhere({
@@ -113,7 +205,7 @@ export async function getComment(id: string) {
   });
 
   if (!comment) {
-    throw new NotFoundError("Izoh topilmadi");
+    throw new NotFoundError("Comment not found");
   }
 
   return comment;
@@ -195,7 +287,7 @@ async function ensureCategoryExists(categoryId: string): Promise<void> {
   });
 
   if (!category) {
-    throw new NotFoundError("Kategoriya topilmadi");
+    throw new NotFoundError("Category not found");
   }
 }
 
@@ -204,14 +296,14 @@ function ensureCanMutateComment(
   auth: AuthContext,
 ): asserts comment is Comment {
   if (!comment) {
-    throw new NotFoundError("Izoh topilmadi");
+    throw new NotFoundError("Comment not found");
   }
 
   if (auth.role === "ADMIN") return;
 
   if (comment.createdById && comment.createdById === auth.userId) return;
 
-  throw new ForbiddenError("Faqat o'zingiz yaratgan izohlarni o'zgartira olasiz");
+  throw new ForbiddenError("You can only modify comments you created");
 }
 
 async function findRandomComments(

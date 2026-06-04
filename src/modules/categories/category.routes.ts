@@ -6,12 +6,13 @@ import * as categoryController from "./category.controller";
 import {
   categoryParamsSchema,
   createCategorySchema,
+  listCategoriesSchema,
   updateCategorySchema,
 } from "./category.schema";
 
 export const categoryRouter = Router();
 
-categoryRouter.get("/", asyncHandler(categoryController.list));
+categoryRouter.get("/", validate(listCategoriesSchema), asyncHandler(categoryController.list));
 categoryRouter.get("/:id", validate(categoryParamsSchema), asyncHandler(categoryController.getById));
 categoryRouter.post(
   "/",

@@ -1,10 +1,16 @@
 import type { Request, Response } from "express";
-import { sendSuccess } from "../../utils/response";
+import { getValidatedQuery } from "../../middleware/validate.middleware";
+import { sendPaginated, sendSuccess } from "../../utils/response";
+import type { ListCategoriesInput } from "./category.service";
 import * as categoryService from "./category.service";
 
-export async function list(_req: Request, res: Response): Promise<void> {
-  const result = await categoryService.listCategories();
-  sendSuccess(res, result.categories);
+export async function list(req: Request, res: Response): Promise<void> {
+  const result = await categoryService.listCategories(getValidatedQuery<ListCategoriesInput>(req));
+  sendPaginated(req, res, result.items, {
+    page: result.page,
+    totalPages: result.totalPages,
+    total: result.total,
+  });
 }
 
 export async function getById(req: Request, res: Response): Promise<void> {

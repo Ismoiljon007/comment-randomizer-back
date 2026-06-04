@@ -13,18 +13,41 @@ interface CategoryInput {
   description?: string | null;
 }
 
-export async function listCategories() {
+export interface ListCategoriesInput {
+  page: number;
+  pageSize: number;
+  q?: string;
+}
+
+export async function listCategories(input: ListCategoriesInput) {
+  const where = input.q
+    ? {
+        name: {
+          contains: input.q,
+          mode: "insensitive" as const,
+        },
+      }
+    : {};
+
+  const total = await prisma.category.count({ where });
   const categories = await prisma.category.findMany({
+    where,
     orderBy: { name: "asc" },
     include: {
       _count: {
         select: { comments: true },
       },
     },
+    skip: (input.page - 1) * input.pageSize,
+    take: input.pageSize,
   });
 
   return {
-    categories: categories.map(({ _count, ...category }) => ({
+    total,
+    page: input.page,
+    pageSize: input.pageSize,
+    totalPages: Math.max(1, Math.ceil(total / input.pageSize)),
+    items: categories.map(({ _count, ...category }) => ({
       ...category,
       commentCount: _count.comments,
     })),
@@ -42,7 +65,7 @@ export async function getCategory(id: string) {
   });
 
   if (!category) {
-    throw new NotFoundError("Kategoriya topilmadi");
+    throw new NotFoundError("Category not found");
   }
 
   const { _count, ...rest } = category;
@@ -104,12 +127,12 @@ function ensureCanMutateCategory(
   auth: AuthContext,
 ): asserts category is { id: string; createdById: string | null } {
   if (!category) {
-    throw new NotFoundError("Kategoriya topilmadi");
+    throw new NotFoundError("Category not found");
   }
 
   if (auth.role === "ADMIN") return;
 
   if (category.createdById && category.createdById === auth.userId) return;
 
-  throw new ForbiddenError("Faqat o'zingiz yaratgan kategoriyalarni o'zgartira olasiz");
+  throw new ForbiddenError("You can only modify categories you created");
 }

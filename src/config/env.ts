@@ -5,7 +5,7 @@ dotenv.config();
 function getRequiredEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
-    throw new Error(`Majburiy environment o'zgaruvchisi topilmadi: ${name}`);
+    throw new Error(`Required environment variable not found: ${name}`);
   }
   return value;
 }

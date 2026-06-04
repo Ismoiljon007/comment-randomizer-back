@@ -7,7 +7,7 @@ export function authenticate(req: Request, _res: Response, next: NextFunction): 
   const token = header?.startsWith("Bearer ") ? header.slice(7) : null;
 
   if (!token) {
-    next(new UnauthorizedError("Bearer token yuborilmagan"));
+    next(new UnauthorizedError("Bearer token not provided"));
     return;
   }
 
@@ -20,6 +20,6 @@ export function authenticate(req: Request, _res: Response, next: NextFunction): 
     };
     next();
   } catch {
-    next(new UnauthorizedError("Token noto'g'ri yoki muddati tugagan"));
+    next(new UnauthorizedError("Token is invalid or expired"));
   }
 }

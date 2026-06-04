@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { authenticate } from "../../middleware/auth.middleware";
+import { uploadExcel } from "../../middleware/upload.middleware";
 import { validate } from "../../middleware/validate.middleware";
 import { asyncHandler } from "../../utils/async-handler";
 import * as commentController from "./comment.controller";
@@ -16,6 +17,8 @@ export const commentRouter = Router();
 
 commentRouter.get("/", validate(listCommentsSchema), asyncHandler(commentController.list));
 commentRouter.get("/stats", validate(statsCommentsSchema), asyncHandler(commentController.stats));
+commentRouter.get("/upload/template", asyncHandler(commentController.downloadTemplate));
+commentRouter.post("/upload", authenticate, uploadExcel, asyncHandler(commentController.uploadExcel));
 commentRouter.post("/bulk-copy", validate(bulkCopySchema), asyncHandler(commentController.bulkCopy));
 commentRouter.get("/:id", validate(commentParamsSchema), asyncHandler(commentController.getById));
 commentRouter.post(

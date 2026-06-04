@@ -3,11 +3,11 @@ import { env } from "./config/env";
 import { prisma } from "./config/prisma";
 
 const server = app.listen(env.PORT, () => {
-  console.log(`Backend API http://localhost:${env.PORT} manzilida tinglanyapti`);
+  console.log(`Backend API listening at http://localhost:${env.PORT}`);
 });
 
 async function shutdown(signal: string): Promise<void> {
-  console.log(`${signal} signali olindi, server to'xtatilmoqda`);
+  console.log(`Received ${signal} signal, shutting down server`);
   server.close(async () => {
     await prisma.$disconnect();
     process.exit(0);
