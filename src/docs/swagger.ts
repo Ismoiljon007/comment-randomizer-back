@@ -55,10 +55,18 @@ export const swaggerSpec = {
       },
       AuthResponse: {
         type: "object",
-        required: ["user", "token"],
+        required: ["status", "data", "message"],
         properties: {
-          user: { $ref: "#/components/schemas/User" },
-          token: { type: "string", example: "jwt_token" },
+          status: { type: "string", example: "success" },
+          data: {
+            type: "object",
+            required: ["user", "token"],
+            properties: {
+              user: { $ref: "#/components/schemas/User" },
+              token: { type: "string", example: "jwt_token" },
+            },
+          },
+          message: { type: "string", example: "" },
         },
       },
       Category: {
@@ -102,46 +110,49 @@ export const swaggerSpec = {
           },
         ],
       },
+      Pagination: {
+        type: "object",
+        required: ["next", "previous", "current_page", "total_pages", "total_items"],
+        properties: {
+          next: {
+            type: "string",
+            nullable: true,
+            example: "https://api.example.com/api/comments?page=2&pageSize=20",
+          },
+          previous: { type: "string", nullable: true, example: null },
+          current_page: { type: "integer", example: 1 },
+          total_pages: { type: "integer", example: 10000 },
+          total_items: { type: "integer", example: 200000 },
+        },
+      },
       CategoryListResponse: {
         type: "object",
-        required: ["data"],
+        required: ["status", "data", "message"],
         properties: {
+          status: { type: "string", example: "success" },
           data: {
-            type: "object",
-            required: ["categories"],
-            properties: {
-              categories: {
-                type: "array",
-                items: { $ref: "#/components/schemas/CategoryWithCount" },
-              },
-            },
+            type: "array",
+            items: { $ref: "#/components/schemas/CategoryWithCount" },
           },
+          message: { type: "string", example: "" },
         },
       },
       CategoryResponse: {
         type: "object",
-        required: ["data"],
+        required: ["status", "data", "message"],
         properties: {
-          data: {
-            type: "object",
-            required: ["category"],
-            properties: {
-              category: { $ref: "#/components/schemas/Category" },
-            },
-          },
+          status: { type: "string", example: "success" },
+          data: { $ref: "#/components/schemas/Category" },
+          message: { type: "string", example: "" },
         },
       },
       CategoryWithCountResponse: {
         type: "object",
-        required: ["data"],
+        required: ["status", "data", "message"],
         properties: {
-          data: {
-            type: "object",
-            required: ["category"],
-            properties: {
-              category: { $ref: "#/components/schemas/CategoryWithCount" },
-            },
-          },
+          status: { type: "string", example: "success" },
+          data: { $ref: "#/components/schemas/CategoryWithCount" },
+          message: { type: "string", example: "" },
         },
       },
       CommentCategory: {
@@ -184,78 +195,61 @@ export const swaggerSpec = {
       },
       CommentsListResponse: {
         type: "object",
-        required: ["data", "meta"],
+        required: ["status", "data", "message", "pagination"],
         properties: {
+          status: { type: "string", example: "success" },
           data: {
-            type: "object",
-            required: ["comments"],
-            properties: {
-              comments: {
-                type: "array",
-                items: { $ref: "#/components/schemas/Comment" },
-              },
-            },
+            type: "array",
+            items: { $ref: "#/components/schemas/Comment" },
           },
-          meta: {
-            type: "object",
-            required: ["total", "page", "pageSize", "totalPages"],
-            properties: {
-              total: { type: "integer", example: 200000 },
-              page: { type: "integer", example: 1 },
-              pageSize: { type: "integer", example: 20 },
-              totalPages: { type: "integer", example: 10000 },
-            },
-          },
+          message: { type: "string", example: "" },
+          pagination: { $ref: "#/components/schemas/Pagination" },
         },
       },
       CommentResponse: {
         type: "object",
-        required: ["data"],
+        required: ["status", "data", "message"],
         properties: {
-          data: {
-            type: "object",
-            required: ["comment"],
-            properties: {
-              comment: { $ref: "#/components/schemas/Comment" },
-            },
-          },
+          status: { type: "string", example: "success" },
+          data: { $ref: "#/components/schemas/Comment" },
+          message: { type: "string", example: "" },
         },
       },
       BulkCopyResponse: {
         type: "object",
-        required: ["data", "meta"],
+        required: ["status", "data", "message"],
         properties: {
+          status: { type: "string", example: "success" },
           data: {
             type: "object",
-            required: ["count", "text"],
+            required: ["count", "text", "total"],
             properties: {
               count: { type: "integer", example: 1000 },
               text: {
                 type: "string",
                 example: "izoh 1\nizoh 2\nizoh 3",
               },
-            },
-          },
-          meta: {
-            type: "object",
-            required: ["total"],
-            properties: {
               total: { type: "integer", example: 12000 },
             },
           },
+          message: { type: "string", example: "" },
         },
       },
       ErrorResponse: {
         type: "object",
-        required: ["message"],
+        required: ["status", "data", "message"],
         properties: {
+          status: { type: "string", example: "error" },
+          data: { type: "object", nullable: true, example: null },
           message: { type: "string", example: "Resurs topilmadi" },
         },
       },
       ValidationErrorResponse: {
         type: "object",
-        required: ["message", "errors"],
+        required: ["status", "data", "message", "errors"],
         properties: {
+          status: { type: "string", example: "error" },
+          data: { type: "object", nullable: true, example: null },
           message: { type: "string", example: "Validatsiyadan o'tmadi" },
           errors: {
             type: "array",
@@ -467,9 +461,17 @@ export const swaggerSpec = {
               "application/json": {
                 schema: {
                   type: "object",
-                  required: ["ok"],
+                  required: ["status", "data", "message"],
                   properties: {
-                    ok: { type: "boolean", example: true },
+                    status: { type: "string", example: "success" },
+                    data: {
+                      type: "object",
+                      required: ["ok"],
+                      properties: {
+                        ok: { type: "boolean", example: true },
+                      },
+                    },
+                    message: { type: "string", example: "" },
                   },
                 },
               },
@@ -527,9 +529,11 @@ export const swaggerSpec = {
               "application/json": {
                 schema: {
                   type: "object",
-                  required: ["user"],
+                  required: ["status", "data", "message"],
                   properties: {
-                    user: { $ref: "#/components/schemas/User" },
+                    status: { type: "string", example: "success" },
+                    data: { $ref: "#/components/schemas/User" },
+                    message: { type: "string", example: "" },
                   },
                 },
               },

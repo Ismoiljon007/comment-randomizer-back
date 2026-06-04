@@ -1,26 +1,21 @@
 import type { Request, Response } from "express";
 import { getValidatedQuery } from "../../middleware/validate.middleware";
+import { sendPaginated, sendSuccess } from "../../utils/response";
 import type { ListCommentsInput } from "./comment.service";
 import * as commentService from "./comment.service";
 
 export async function list(req: Request, res: Response): Promise<void> {
   const result = await commentService.listComments(getValidatedQuery<ListCommentsInput>(req));
-  res.json({
-    data: {
-      comments: result.items,
-    },
-    meta: {
-      total: result.total,
-      page: result.page,
-      pageSize: result.pageSize,
-      totalPages: result.totalPages,
-    },
+  sendPaginated(req, res, result.items, {
+    page: result.page,
+    totalPages: result.totalPages,
+    total: result.total,
   });
 }
 
 export async function getById(req: Request, res: Response): Promise<void> {
   const comment = await commentService.getComment(req.params.id as string);
-  res.json({ data: { comment } });
+  sendSuccess(res, comment);
 }
 
 export async function create(req: Request, res: Response): Promise<void> {
@@ -28,7 +23,7 @@ export async function create(req: Request, res: Response): Promise<void> {
     userId: req.user!.userId,
     role: req.user!.role,
   });
-  res.status(201).json({ data: { comment } });
+  sendSuccess(res, comment, "", 201);
 }
 
 export async function update(req: Request, res: Response): Promise<void> {
@@ -36,7 +31,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     userId: req.user!.userId,
     role: req.user!.role,
   });
-  res.json({ data: { comment } });
+  sendSuccess(res, comment);
 }
 
 export async function remove(req: Request, res: Response): Promise<void> {
@@ -49,13 +44,9 @@ export async function remove(req: Request, res: Response): Promise<void> {
 
 export async function bulkCopy(req: Request, res: Response): Promise<void> {
   const result = await commentService.bulkCopy(req.body);
-  res.json({
-    data: {
-      count: result.count,
-      text: result.text,
-    },
-    meta: {
-      total: result.total,
-    },
+  sendSuccess(res, {
+    count: result.count,
+    text: result.text,
+    total: result.total,
   });
 }

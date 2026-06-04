@@ -15,6 +15,8 @@ export function errorMiddleware(
   const error = normalizeError(err);
 
   res.status(error.statusCode).json({
+    status: "error",
+    data: null,
     message: error.message,
     ...(error.errors ? { errors: error.errors } : {}),
   });
