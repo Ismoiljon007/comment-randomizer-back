@@ -7,7 +7,7 @@ interface AuthContext {
   role: Role;
 }
 
-interface ListCommentsInput {
+export interface ListCommentsInput {
   page: number;
   pageSize: number;
   categoryId?: string;

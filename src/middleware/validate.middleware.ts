@@ -36,10 +36,18 @@ export function validate(schema: z.ZodType) {
       params?: unknown;
     };
 
+    req.validated = {
+      ...req.validated,
+      ...parsed,
+    };
+
     if (parsed.body !== undefined) req.body = parsed.body;
-    if (parsed.query !== undefined) req.query = parsed.query as Request["query"];
     if (parsed.params !== undefined) req.params = parsed.params as Request["params"];
 
     next();
   };
+}
+
+export function getValidatedQuery<T>(req: Request): T {
+  return (req.validated?.query ?? req.query) as T;
 }

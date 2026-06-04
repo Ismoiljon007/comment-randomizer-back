@@ -1,8 +1,10 @@
 import type { Request, Response } from "express";
+import { getValidatedQuery } from "../../middleware/validate.middleware";
+import type { ListCommentsInput } from "./comment.service";
 import * as commentService from "./comment.service";
 
 export async function list(req: Request, res: Response): Promise<void> {
-  const result = await commentService.listComments(req.query as never);
+  const result = await commentService.listComments(getValidatedQuery<ListCommentsInput>(req));
   res.json(result);
 }
 
