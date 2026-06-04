@@ -836,9 +836,9 @@ export const swaggerSpec = {
     "/comments/upload": {
       post: {
         tags: ["Comments"],
-        summary: "Import comments from an Excel (.xlsx) file",
+        summary: "Import comments from an Excel (.xlsx) or .csv file",
         description:
-          "Upload an .xlsx file with columns `category`, `text`, `sentiment`. Each row becomes a comment; if the category does not exist it is created automatically. `sentiment` must be one of POSITIVE, FUNNY, CRITICAL (case-insensitive). Invalid rows are skipped and reported in `errors`.",
+          "Upload an .xlsx or .csv file with columns `category`, `text`, `sentiment`. Each row becomes a comment; if the category does not exist it is created automatically. `sentiment` must be one of POSITIVE, FUNNY, CRITICAL (case-insensitive). Invalid rows are skipped and reported in `errors`. Legacy .xls is not supported — re-save as .xlsx.",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -851,7 +851,7 @@ export const swaggerSpec = {
                   file: {
                     type: "string",
                     format: "binary",
-                    description: ".xlsx file (max 4MB)",
+                    description: ".xlsx or .csv file (max 4MB)",
                   },
                 },
               },

@@ -8,16 +8,17 @@ export const uploadExcel = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: MAX_FILE_SIZE },
   fileFilter: (_req, file, cb) => {
-    const isExcel =
-      /\.(xlsx|xls)$/i.test(file.originalname) ||
+    const accepted =
+      /\.(xlsx|csv)$/i.test(file.originalname) ||
       file.mimetype.includes("spreadsheetml") ||
-      file.mimetype.includes("excel");
+      file.mimetype.includes("csv") ||
+      file.mimetype === "application/octet-stream";
 
-    if (isExcel) {
+    if (accepted) {
       cb(null, true);
       return;
     }
 
-    cb(new ValidationError("Only .xlsx files are accepted"));
+    cb(new ValidationError("Only .xlsx or .csv files are accepted (legacy .xls is not supported)"));
   },
 }).single("file");

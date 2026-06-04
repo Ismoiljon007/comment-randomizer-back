@@ -1,3 +1,4 @@
+import { Readable } from "node:stream";
 import ExcelJS from "exceljs";
 
 export const COMMENT_COLUMNS = ["category", "text", "sentiment"] as const;
@@ -5,17 +6,7 @@ export const SENTIMENT_OPTIONS = ["POSITIVE", "FUNNY", "CRITICAL"] as const;
 
 export type ParsedRow = Record<string, string>;
 
-/**
- * Reads the first worksheet of an .xlsx buffer and returns each data row as an
- * object keyed by the (lower-cased, trimmed) header cells in row 1.
- */
-export async function parseCommentsExcel(buffer: Buffer): Promise<ParsedRow[]> {
-  const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(buffer as never);
-
-  const sheet = workbook.worksheets[0];
-  if (!sheet) return [];
-
+function rowsFromSheet(sheet: ExcelJS.Worksheet): ParsedRow[] {
   const headers: Record<number, string> = {};
   sheet.getRow(1).eachCell((cell, col) => {
     headers[col] = String(cell.text ?? "").trim().toLowerCase();
@@ -40,6 +31,39 @@ export async function parseCommentsExcel(buffer: Buffer): Promise<ParsedRow[]> {
   });
 
   return rows;
+}
+
+/**
+ * Reads the first worksheet of an .xlsx buffer and returns each data row as an
+ * object keyed by the (lower-cased, trimmed) header cells in row 1.
+ */
+export async function parseCommentsExcel(buffer: Buffer): Promise<ParsedRow[]> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer as never);
+
+  const sheet = workbook.worksheets[0];
+  if (!sheet) return [];
+
+  return rowsFromSheet(sheet);
+}
+
+/** Reads a CSV buffer the same way (handles quoted fields/newlines via ExcelJS). */
+export async function parseCommentsCsv(buffer: Buffer): Promise<ParsedRow[]> {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = await workbook.csv.read(Readable.from(buffer));
+  if (!sheet) return [];
+
+  return rowsFromSheet(sheet);
+}
+
+/** Dispatches to the CSV or XLSX parser based on the file name / mime type. */
+export async function parseCommentsFile(
+  buffer: Buffer,
+  fileName = "",
+  mimeType = "",
+): Promise<ParsedRow[]> {
+  const isCsv = /\.csv$/i.test(fileName) || mimeType.includes("csv");
+  return isCsv ? parseCommentsCsv(buffer) : parseCommentsExcel(buffer);
 }
 
 /**

@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { getValidatedQuery } from "../../middleware/validate.middleware";
-import { buildCommentsTemplate, parseCommentsExcel } from "../../utils/excel";
+import { buildCommentsTemplate, parseCommentsFile } from "../../utils/excel";
 import { ValidationError } from "../../utils/errors";
 import { sendPaginated, sendSuccess } from "../../utils/response";
 import type { ListCommentsInput, StatsCommentsInput } from "./comment.service";
@@ -50,11 +50,24 @@ export async function remove(req: Request, res: Response): Promise<void> {
 }
 
 export async function uploadExcel(req: Request, res: Response): Promise<void> {
-  if (!req.file) {
+  const file = req.file;
+  if (!file || !file.buffer || file.buffer.length === 0) {
     throw new ValidationError("No file uploaded (send it as form-data field 'file')");
   }
 
-  const rows = await parseCommentsExcel(req.file.buffer);
+  let rows;
+  try {
+    rows = await parseCommentsFile(file.buffer, file.originalname, file.mimetype);
+  } catch {
+    throw new ValidationError(
+      `Could not read the file. Make sure it is a valid .xlsx or .csv (received ${file.buffer.length} bytes). Legacy .xls is not supported — re-save as .xlsx.`,
+    );
+  }
+
+  if (!rows.length) {
+    throw new ValidationError("The file has no data rows (expected columns: category, text, sentiment)");
+  }
+
   const result = await commentService.importComments(rows, {
     userId: req.user!.userId,
     role: req.user!.role,
