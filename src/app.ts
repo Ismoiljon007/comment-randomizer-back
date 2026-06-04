@@ -1,20 +1,37 @@
 import compression from "compression";
-import cors, { type CorsOptions } from "cors";
-import express from "express";
+import express, { type NextFunction, type Request, type Response } from "express";
 import helmet from "helmet";
 import { errorMiddleware, notFound } from "./middleware/error.middleware";
 import { apiRouter } from "./routes";
 
 export const app = express();
 
-const corsOptions: CorsOptions = {
-  origin: true,
-  credentials: true,
-  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  optionsSuccessStatus: 204,
-};
+function corsMiddleware(req: Request, res: Response, next: NextFunction): void {
+  const origin = req.headers.origin;
+  const requestedHeaders = req.headers["access-control-request-headers"];
 
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  }
+
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    typeof requestedHeaders === "string" ? requestedHeaders : "Content-Type, Authorization",
+  );
+  res.setHeader("Access-Control-Max-Age", "86400");
+
+  if (req.method === "OPTIONS") {
+    res.sendStatus(204);
+    return;
+  }
+
+  next();
+}
+
+app.use(corsMiddleware);
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -32,9 +49,6 @@ app.use(
       },
     },
   }),
-);
-app.use(
-  cors(corsOptions),
 );
 app.use(compression());
 app.use(express.json({ limit: "2mb" }));
